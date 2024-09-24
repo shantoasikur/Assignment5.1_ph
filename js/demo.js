@@ -1,66 +1,42 @@
-// Initial setup for coins
-let totalCoins = 5500; // Coins in the nav bar
-document.getElementById("tcoin").innerText = totalCoins;
+document.addEventListener('DOMContentLoaded', function () {
+    let totalCoins = parseInt(document.getElementById('tcoin').textContent);
 
-// Transaction history array
-let history = [];
+    // All donate now buttons
+    const donateButtons = document.querySelectorAll('.donateNow');
 
-// Function to handle donation logic
-function handleDonation(event) {
-    const parentCard = event.target.closest('div');
-    const inputField = parentCard.querySelector('input[type="number"]');
-    const donationAmount = parseInt(inputField.value);
+    donateButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const cause = this.getAttribute('data-cause');
+            const inputField = document.getElementById(`${cause}-input`);
+            const donationAmount = parseInt(inputField.value);
+            const causeCoinElement = document.getElementById(`${cause}-coin`);
 
-    if (!donationAmount || donationAmount <= 0 || donationAmount > totalCoins) {
-        alert("Please enter a valid donation amount within your available coins.");
-        return;
-    }
+            if (!donationAmount || donationAmount <= 0 || donationAmount > totalCoins) {
+                alert('Invalid donation amount');
+                return;
+            }
 
-    // Update the coins in the nav bar
-    totalCoins -= donationAmount;
-    document.getElementById("tcoin").innerText = totalCoins;
+            // Update total coins
+            totalCoins -= donationAmount;
+            document.getElementById('tcoin').textContent = totalCoins;
 
-    // Update the donation amount on the card
-    const cardCoinElement = parentCard.querySelector('button h3 span');
-    const currentCardCoins = parseInt(cardCoinElement.innerText);
-    cardCoinElement.innerText = currentCardCoins + donationAmount;
+            // Update the cause-specific coin
+            const currentCauseCoins = parseInt(causeCoinElement.textContent);
+            causeCoinElement.textContent = currentCauseCoins + donationAmount;
 
-    // Add transaction to history
-    const causeTitle = parentCard.querySelector('h3').innerText;
-    history.push({
-        cause: causeTitle,
-        amount: donationAmount
+            // Add to transaction history
+            addToHistory(cause, donationAmount);
+
+            // Clear input field
+            inputField.value = '';
+        });
     });
 
-    // Clear the input field
-    inputField.value = "";
-}
-
-// Attach event listeners to all "Donate Now" buttons
-const donateButtons = document.querySelectorAll(".donateNow");
-donateButtons.forEach(button => {
-    button.addEventListener('click', handleDonation);
-});
-
-// Function to display transaction history
-function showHistory() {
-    let historyMessage = "Transaction History:\n";
-    history.forEach((item, index) => {
-        historyMessage += `${index + 1}. ${item.cause}: ${item.amount} BDT\n`;
-    });
-
-    if (history.length === 0) {
-        historyMessage = "No transactions yet.";
+    function addToHistory(cause, amount) {
+        const historyList = document.getElementById('history-list');
+        const newTransaction = document.createElement('li');
+        const causeName = cause.charAt(0).toUpperCase() + cause.slice(1); // Capitalize cause name
+        newTransaction.textContent = `Donated ${amount} BDT to ${causeName}`;
+        historyList.appendChild(newTransaction);
     }
-
-    alert(historyMessage);
-}
-
-// Attach event listener to "History" button
-const historyButton = document.querySelector('button:contains("History")');
-historyButton.addEventListener('click', showHistory);
-
-// Redirect to a new blog page
-document.querySelector('button:contains("Blog")').addEventListener('click', () => {
-    window.location.href = 'blog.html'; // Redirect to blog.html
 });
